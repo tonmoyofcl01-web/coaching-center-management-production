@@ -7,10 +7,10 @@ export function errorMiddleware(error, req, res, next) {
     return next(error);
   }
 
-  const statusCode = error.status || error.statusCode || 500;
+  const statusCode = error.statusCode || 500;
 
   res.status(statusCode).json({
-    status: "error",
+    status: error.status || (statusCode >= 500 ? "error" : "fail"),
     message:
       env.nodeEnv === "production"
         ? "An unexpected error occurred."
