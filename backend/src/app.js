@@ -5,15 +5,17 @@ import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 
 import { env } from "./config/env.js";
-import healthRoutes from "./routes/health.routes.js";
+import apiRoutes from "./routes/index.js";
 
 import { errorMiddleware } from "./middleware/error.middleware.js";
 import { notFoundMiddleware } from "./middleware/notFound.middleware.js";
 
 const app = express();
 
+// Security middleware.
 app.use(helmet());
 
+// CORS configuration.
 app.use(
   cors({
     origin: env.frontendUrl,
@@ -22,10 +24,11 @@ app.use(
   }),
 );
 
+// Request parsing.
 app.use(express.json({ limit: "10kb" }));
-
 app.use(cookieParser());
 
+// API rate limiting.
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 200,
@@ -39,8 +42,10 @@ const apiLimiter = rateLimit({
 
 app.use("/api", apiLimiter);
 
-app.use("/api/health", healthRoutes);
+// Central API routes.
+app.use("/api", apiRoutes);
 
+// Root route.
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "success",
@@ -48,10 +53,8 @@ app.get("/", (req, res) => {
   });
 });
 
-// Handle unknown routes.
+// 404 and error handling.
 app.use(notFoundMiddleware);
-
-// Centralized error handling (must be last).
 app.use(errorMiddleware);
 
 export default app;
