@@ -1,6 +1,8 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-import { ArrowLeft, Construction, GraduationCap } from "lucide-react";
+import { ArrowLeft, Construction, GraduationCap, LogOut } from "lucide-react";
+
+import { useAuth } from "../context/AuthContext";
 
 const portalDetails = {
   admin: {
@@ -19,10 +21,20 @@ const portalDetails = {
   },
 };
 
-function PortalPage() {
-  const { role } = useParams();
-
+function PortalPage({ role }) {
   const portal = portalDetails[role];
+
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate(`/${role}`, { replace: true });
+    } catch {
+      alert("Unable to log out. Please try again.");
+    }
+  };
 
   if (!portal) {
     return <div className="p-10 text-center">Portal not found.</div>;
@@ -41,7 +53,19 @@ function PortalPage() {
 
         <p className="mt-3 text-sm text-slate-500">{portal.description}</p>
 
-        <div className="my-8 rounded-xl bg-amber-50 p-5">
+        <div className="my-5 rounded-xl bg-slate-50 p-4 text-left">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Logged in as
+          </p>
+
+          <p className="mt-1 font-semibold text-[#17243a]">
+            {user?.fullName || user?.name || "User"}
+          </p>
+
+          <p className="text-sm text-slate-500">{user?.email}</p>
+        </div>
+
+        <div className="my-6 rounded-xl bg-amber-50 p-5">
           <Construction size={25} className="mx-auto mb-3 text-amber-600" />
 
           <h2 className="font-bold text-amber-900">Development in Progress</h2>
@@ -51,13 +75,23 @@ function PortalPage() {
           </p>
         </div>
 
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 rounded-lg bg-[#17243a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#243751]"
-        >
-          <ArrowLeft size={16} />
-          Back to Home
-        </Link>
+        <div className="flex flex-col justify-center gap-3 sm:flex-row">
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+          >
+            <ArrowLeft size={16} />
+            Home
+          </Link>
+
+          <button
+            onClick={handleLogout}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#17243a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#243751]"
+          >
+            <LogOut size={16} />
+            Logout
+          </button>
+        </div>
       </div>
     </section>
   );
