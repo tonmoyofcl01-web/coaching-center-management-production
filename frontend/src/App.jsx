@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 
 import PublicLayout from "./layouts/PublicLayout";
 import AdminLayout from "./layouts/admin/AdminLayout";
+import TeacherLayout from "./layouts/teacher/TeacherLayout";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -9,6 +10,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import PortalPage from "./pages/PortalPage";
 import AdminDashboard from "./layouts/admin/AdminDashboard";
+import TeacherDashboard from "./layouts/teacher/TeacherDashboard";
 import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
@@ -43,14 +45,9 @@ function App() {
 
       {/* Teacher Routes */}
       <Route element={<ProtectedRoute allowedRole="TEACHER" />}>
-        <Route
-          path="/teacher/dashboard"
-          element={
-            <PublicLayout>
-              <PortalPage role="teacher" />
-            </PublicLayout>
-          }
-        />
+        <Route element={<TeacherLayout />}>
+          <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
+        </Route>
       </Route>
 
       {/* Student Routes */}
