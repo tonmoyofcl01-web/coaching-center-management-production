@@ -1,15 +1,10 @@
 import express from "express";
-
 import cors from "cors";
-
 import helmet from "helmet";
-
 import cookieParser from "cookie-parser";
-
 import rateLimit from "express-rate-limit";
 
 import { env } from "./config/env.js";
-
 import healthRoutes from "./routes/health.routes.js";
 
 const app = express();
@@ -20,10 +15,8 @@ app.use(helmet());
 // CORS configuration.
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
-
+    origin: env.frontendUrl,
     credentials: true,
-
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   }),
 );
@@ -38,19 +31,14 @@ app.use(
 // Cookie parsing.
 app.use(cookieParser());
 
-// Basic API rate limiting.
+// API rate limiting.
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-
   limit: 200,
-
   standardHeaders: "draft-8",
-
   legacyHeaders: false,
-
   message: {
     status: "error",
-
     message: "Too many requests. Please try again later.",
   },
 });
@@ -64,7 +52,6 @@ app.use("/api/health", healthRoutes);
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "success",
-
     message: "Coaching Center Management API",
   });
 });
@@ -73,7 +60,6 @@ app.get("/", (req, res) => {
 app.use((req, res) => {
   res.status(404).json({
     status: "error",
-
     message: "API endpoint not found.",
   });
 });
@@ -90,9 +76,8 @@ app.use((error, req, res, next) => {
 
   res.status(statusCode).json({
     status: "error",
-
     message:
-      env.NODE_ENV === "production"
+      env.nodeEnv === "production"
         ? "An unexpected error occurred."
         : error.message,
   });
