@@ -7,12 +7,13 @@ import rateLimit from "express-rate-limit";
 import { env } from "./config/env.js";
 import healthRoutes from "./routes/health.routes.js";
 
+import { errorMiddleware } from "./middleware/error.middleware.js";
+import { notFoundMiddleware } from "./middleware/notFound.middleware.js";
+
 const app = express();
 
-// Security headers.
 app.use(helmet());
 
-// CORS configuration.
 app.use(
   cors({
     origin: env.frontendUrl,
@@ -21,17 +22,10 @@ app.use(
   }),
 );
 
-// Request body parsing.
-app.use(
-  express.json({
-    limit: "10kb",
-  }),
-);
+app.use(express.json({ limit: "10kb" }));
 
-// Cookie parsing.
 app.use(cookieParser());
 
-// API rate limiting.
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 200,
@@ -45,10 +39,8 @@ const apiLimiter = rateLimit({
 
 app.use("/api", apiLimiter);
 
-// API routes.
 app.use("/api/health", healthRoutes);
 
-// Root endpoint.
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "success",
@@ -57,30 +49,9 @@ app.get("/", (req, res) => {
 });
 
 // Handle unknown routes.
-app.use((req, res) => {
-  res.status(404).json({
-    status: "error",
-    message: "API endpoint not found.",
-  });
-});
+app.use(notFoundMiddleware);
 
-// Central error handler.
-app.use((error, req, res, next) => {
-  console.error(error);
-
-  if (res.headersSent) {
-    return next(error);
-  }
-
-  const statusCode = error.status || 500;
-
-  res.status(statusCode).json({
-    status: "error",
-    message:
-      env.nodeEnv === "production"
-        ? "An unexpected error occurred."
-        : error.message,
-  });
-});
+// Centralized error handling (must be last).
+app.use(errorMiddleware);
 
 export default app;
